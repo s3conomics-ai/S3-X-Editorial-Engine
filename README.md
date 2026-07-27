@@ -1,6 +1,12 @@
 # 🚀 S3 X Editorial Engine
 
+![System Architecture](assets/architecture-diagram.png)
+
 An AI-powered editorial automation system that discovers AI news, researches topics, generates educational X (Twitter) threads, routes them through a human approval workflow, and publishes them automatically.
+
+![GitHub](https://img.shields.io/badge/Built%20With-n8n-EA4B71)
+![LLM](https://img.shields.io/badge/AI-OpenAI%20%7C%20Gemini-blue)
+![Status](https://img.shields.io/badge/Status-v1.0.0-success)
 
 ---
 
