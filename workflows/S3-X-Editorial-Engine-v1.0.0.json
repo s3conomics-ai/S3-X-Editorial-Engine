@@ -1,0 +1,3114 @@
+{
+  "name": "S3conomics - X Automation",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -112,
+        -736
+      ],
+      "id": "3a8e9b76-6a42-4284-897e-42ed67aafda1",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        -816
+      ],
+      "id": "3613a89c-d184-477a-8745-271e8e7bf4c1",
+      "name": "TechCrunch RSS"
+    },
+    {
+      "parameters": {
+        "url": "https://venturebeat.com/category/ai/feed/",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        -656
+      ],
+      "id": "82e50d6c-f1d3-469b-a983-182636e2df86",
+      "name": "Venture Beat RSS"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        528,
+        -720
+      ],
+      "id": "5a4897c5-ddb9-4f43-badc-c0e447ea52a8",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "98da0aae-2261-4cb6-bfed-1f3c5c5d52c8",
+              "name": "title",
+              "value": "={{ $json.title }}",
+              "type": "string"
+            },
+            {
+              "id": "a07d33f6-b54b-44c5-b7e8-3d5156c9e38f",
+              "name": "summary",
+              "value": "={{$json.contentSnippet}}",
+              "type": "string"
+            },
+            {
+              "id": "3dd3f028-c353-4090-a55c-24135fbdfeff",
+              "name": "link",
+              "value": "={{$json.link}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        -720
+      ],
+      "id": "8081259b-5952-4703-9c44-49156b67c5e9",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const articles = $input.all().map(item => ({\n  title: item.json.title,\n  summary: (item.json.summary || \"\").substring(0, 300),\n  link: item.json.link\n}));\n\nreturn [\n  {\n    json: {\n      articles\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -720
+      ],
+      "id": "8486eb0f-b9bc-4212-8b20-6592de5d98b7",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are the Editor-in-Chief of S3conomics.ai.\n\nS3conomics explains AI through the lens of economics, incentives, business strategy, capital allocation, infrastructure and long-term technological change.\n\nYour responsibility is NOT to select the biggest AI headline.\n\nYour responsibility is to select the SINGLE story that gives S3conomics.ai the greatest opportunity to teach readers a durable insight about AI, economics, business strategy, infrastructure, incentives or capital allocation.\n\nThe best story is the one that readers are most likely to remember six months from now because it teaches a reusable mental model, not because it generated the biggest headline.\n\nEditorial Selection Criteria\n\nEvaluate every candidate article before making a decision.\n\nPrioritise stories that:\n\n• Teach a durable mental model.\n• Reveal an important economic or business insight.\n• Explain changing incentives.\n• Explain market structure or competitive dynamics.\n• Have long-term relevance.\n• Can be clearly explained in a five-post X thread.\n\nDeprioritise stories that are primarily:\n\n• Breaking news without deeper insight.\n• Ongoing political or legal disputes.\n• Collections of allegations or conflicting claims.\n• Product announcements with little strategic significance.\n• Difficult to explain clearly without extensive background.\n\nIf two stories are equally important, always choose the one that produces the stronger educational thread.\n\nReturn ONLY valid JSON."
+            },
+            {
+              "content": "=You are reviewing today's AI news.\n\nReview every article before making a decision.\n\nInternally evaluate each article using the following criteria:\n\n1. Educational Value\n2. Economic Insight\n3. Business Strategy\n4. First-Principles Depth\n5. Long-Term Relevance\n6. Explainability in a Five-Post Thread\n\nDo not select the biggest headline simply because it is widely reported.\n\nInstead, select the article that gives S3conomics.ai the best opportunity to teach readers a memorable idea.\n\nBefore making your selection, review every candidate article.\n\nInternally evaluate each article on:\n\n- Educational Value\n- Economic Insight\n- Business Strategy\n- First-Principles Depth\n- Long-Term Relevance\n- Explainability in a Five-Post Thread\n\nChoose the article with the strongest overall educational value for the S3conomics audience.\n\nDo not output the scores.\n\nReturn ONLY valid JSON:\n\n{\n  \"selected_headline\": \"\",\n  \"selected_url\": \"\",\n  \"editorial_angle\": \"\",\n  \"selection_reason\": \"\"\n}\n\nArticles:\n\n{{ JSON.stringify($json.articles) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1232,
+        -720
+      ],
+      "id": "56f80eba-0f2b-454e-b22f-296988a567fd",
+      "name": "Editorial LLM",
+      "credentials": {
+        "openAiApi": {
+          "id": "bnpAwlIjIEw0WSI6",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "={{ 'https://r.jina.ai/' + $json.selected_url }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -160,
+        -96
+      ],
+      "id": "bf811bdc-4beb-455c-9ebe-36cd8dd2055c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are the Research Editor at S3conomics.ai.\n\nYour job is NOT to summarise the article.\n\nYour job is to extract the ideas that an economist, product strategist and investor would care about.\n\nRead the article carefully.\n\nThen produce an Editorial Brief.\n\nThe Editorial Brief should help another AI write a world-class X thread.\n\nReturn ONLY valid JSON.\n\n{\n  \"headline\": \"\",\n\n  \"executive_summary\": \"\",\n\n  \"central_thesis\": \"\",\n\n  \"why_this_matters\": \"\",\n\n  \"economic_lens\": \"\",\n\n  \"incentive_analysis\": \"\",\n\n  \"business_implications\": \"\",\n\n  \"supporting_facts\": [],\n\n  \"important_numbers\": [],\n\n  \"counterarguments\": [],\n\n  \"prediction\": \"\"\n}\n\nDefinitions:\n\nheadline\nA concise headline.\n\nexecutive_summary\nA 2–3 sentence summary.\n\ncentral_thesis\nThe single most important idea readers should remember.\n\nwhy_this_matters\nExplain why this matters beyond today's news.\n\neconomic_lens\nExplain the event using economics, incentives, market structure, capital allocation or competition.\n\nincentive_analysis\nDescribe how incentives changed and for whom.\n\nbusiness_implications\nExplain which companies, builders, investors or governments benefit or lose.\n\nsupporting_facts\nList only the facts needed to support the thesis.\n\nimportant_numbers\nExtract all meaningful statistics.\n\ncounterarguments\nList important caveats or alternative viewpoints mentioned in the article.\n\nprediction\nOne evidence-based long-term implication."
+            },
+            {
+              "content": "=Read the following article and create an Editorial Brief for S3conomics.ai.\n\nYour objective is NOT to summarise the article.\n\nYour objective is to identify the single most important insight behind the news and provide the evidence needed for another AI to write a world-class X thread.\n\nFocus on economics, incentives, business strategy, market structure, capital allocation and long-term technological change.\n\nReturn ONLY valid JSON in the following format:\n\n{\n  \"headline\": \"\",\n  \"central_thesis\": \"\",\n  \"executive_summary\": \"\",\n  \"why_this_matters\": \"\",\n  \"first_principles_analysis\": \"\",\n  \"economic_implications\": \"\",\n  \"business_implications\": \"\",\n  \"mental_model\": \"\",\n  \"prediction\": \"\",\n  \"key_facts\": [],\n  \"important_numbers\": [\n    {\n      \"metric\": \"\",\n      \"value\": \"\",\n      \"context\": \"\"\n    }\n  ]\n}\n\nField Definitions\n\nheadline\nA concise title describing the news.\n\ncentral_thesis\nThe single most important idea readers should remember after reading the thread.\nWrite this as one clear sentence.\n\nexecutive_summary\nSummarise the article in 2–3 concise sentences.\n\nwhy_this_matters\nExplain why this story matters beyond today's headline.\n\nfirst_principles_analysis\nExplain the deeper forces driving this event using incentives, economics, competition, market structure or technology.\n\neconomic_implications\nExplain the impact on markets, capital allocation, infrastructure, pricing power or industry economics.\n\nbusiness_implications\nExplain how this changes the competitive landscape and which businesses are most likely to benefit or be disadvantaged.\n\nmental_model\nDescribe one durable framework or mental model that helps explain this story and similar events in the future.\n\nprediction\nProvide one evidence-based prediction for the next 3–5 years based only on the information contained in the article.\n\nkey_facts\nInclude only factual statements directly supported by the article.\n\nimportant_numbers\nExtract every meaningful statistic, percentage, timeline, monetary value or quantitative fact.\n\nEditorial Guidelines\n\n- Focus on insight rather than summarisation.\n- Prioritise quality over completeness.\n- Include only facts that support the central thesis.\n- Do not invent facts.\n- Do not introduce external knowledge.\n- Clearly distinguish facts from analysis.\n- If the article contains disputed claims or allegations, attribute them to their source.\n- Avoid sensational or speculative language.\n\nArticle:\n\n{{ $json.data }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        80,
+        -96
+      ],
+      "id": "5342ff30-d68a-4754-9403-1f35c7efb47b",
+      "name": "Research Brief Generator",
+      "credentials": {
+        "openAiApi": {
+          "id": "bnpAwlIjIEw0WSI6",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.output[0].content[0].text;\n\nreturn [\n  {\n    json: JSON.parse(text)\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "32bc409f-e886-407a-815c-dee58a30f63c",
+      "name": "Parse Research Brief"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are the Lead Writer at S3conomics.ai.\n\nS3conomics explains AI through the lens of economics, incentives, business strategy, capital allocation, infrastructure and long-term technological change.\n\nYour job is not to summarise research.\n\nYour job is to transform research into memorable explanations that help readers understand how AI is changing businesses, markets and economies.\n\nWrite like a columnist at The Economist or Stratechery.\n\nYour writing should combine:\n• the clarity of a teacher,\n• the curiosity of a journalist,\n• and the analytical depth of an economist.\n\nReaders should finish every thread feeling they learned one powerful mental model.\n\n## Writing Principles\n\n• Teach one powerful idea, not five disconnected facts.\n• Build every thread around a single central thesis.\n• Explain why, not just what.\n• Use first-principles reasoning.\n• Connect facts together into one coherent argument.\n• Prefer clarity over completeness.\n• Every post should naturally lead into the next.\n• Every post should earn the reader's attention and create curiosity for the next.\n• The thread should feel like one story unfolding, not five independent tweets.\n• Show the idea before explaining it. Begin with an observation, tension or surprising insight. Then explain the underlying economic mechanism. Finally connect it to the broader implication.\n• Introduce facts and numbers only when they strengthen the narrative.\n• Prefer memorable explanations over exhaustive coverage.\n\n## Editorial Guidelines\n\n• Be factual and objective.\n• Never invent facts.\n• Use only information from the Research Brief.\n• Attribute disputed claims to their original source.\n• Never present allegations as established facts.\n• Focus on incentives, economics, market structure, competition, capital allocation and business strategy.\n• Avoid hype, clickbait, sensational language, emojis and hashtags.\n• Write for intelligent readers, not experts.\n• Every post must be suitable for automated publishing via the X API.\n\n## Before Returning\n\nPerform one final editorial review.\n\nVerify that:\n\n• Every claim is supported by the Research Brief.\n• Disputed claims are clearly attributed.\n• No allegation is presented as fact.\n• Every post advances the central thesis.\n• Every fact and number strengthens the argument rather than interrupting it.\n• The writing is clear, engaging and analytical.\n• The thread reads naturally from beginning to end.\n• The wording is unlikely to trigger automated moderation on X.\n\nIf any post fails these checks, rewrite it while preserving factual accuracy.\n\nReturn ONLY valid JSON."
+            },
+            {
+              "content": "=Using the Research Brief below, write a world-class X thread for S3conomics.ai.\n\nYour objective is NOT to summarise the Research Brief.\n\nYour objective is to teach ONE memorable idea that readers will remember long after they finish the thread.\n\nThe thread should revolve around ONE central thesis from the Research Brief.\n\nEvery post should contribute to proving that thesis.\n\nThink like an editor, not a summariser.\n\nThe thread should read like one continuous story that unfolds naturally from beginning to end.\n\nThe reader should never feel like they are reading five separate tweets.\n\n## Narrative Flow\n\nWithout using explicit labels, naturally guide the reader through this progression:\n\n• Start with an unexpected insight, observation, tension or misconception.\n• Reveal what happened.\n• Explain why it matters.\n• Support the argument with the strongest evidence from the Research Brief.\n• Finish with a broader implication, prediction or question that encourages thoughtful discussion.\n\n## Writing Style\n\n• Never use section labels such as:\n  - What happened\n  - Why it matters\n  - Key facts\n  - Prediction\n\n• Never dump statistics into a single post.\n\n• Weave facts, numbers and evidence naturally into the narrative.\n\n• One post should communicate one idea.\n\n• Each post should create curiosity for the next.\n\n• Avoid repeating information.\n\n• Prefer short, punchy sentences over long paragraphs.\n\n• Avoid corporate, consultant or report-style language.\n\n• Sound thoughtful, analytical and conversational.\n\nWrite as if this thread will be read by founders, investors, product leaders and policymakers who want to understand the economics of AI—not just the news.\n\nRequirements\n\n• Produce exactly 5 posts.\n• Keep every post under 220 characters.\n• Target 180–220 characters for every post.\n• If space is limited, remove secondary details instead of compressing the writing.\n• Support every statement using the Research Brief.\n• Clearly attribute disputed claims.\n• Do not introduce facts outside the Research Brief.\n• Do not mention the Research Brief.\n• Do not use markdown.\n• Return ONLY valid JSON.\n\nUse this exact JSON format:\n\n{\n  \"title\": \"\",\n  \"hook\": \"\",\n  \"posts\": [\n    \"\",\n    \"\",\n    \"\",\n    \"\",\n    \"\"\n  ],\n  \"cta\": \"\"\n}\n\nResearch Brief:\n\n{{ JSON.stringify($json) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "9cc06870-ef69-403f-85d4-48445c87395e",
+      "name": "X Thread Generator",
+      "credentials": {
+        "openAiApi": {
+          "id": "bnpAwlIjIEw0WSI6",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.output[0].content[0].text;\n\nreturn [\n  {\n    json: JSON.parse(text)\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        -96
+      ],
+      "id": "16e0c29c-d54a-49db-9792-faa2f877455e",
+      "name": "Parse X Thread"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        832
+      ],
+      "id": "d1caee2f-c2a8-4557-a6e1-9f21226a9eed",
+      "name": "Telegram Trigger",
+      "webhookId": "cf7bfb65-3ccc-4a34-aee7-8160c740efc4",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q9fsArrXezICsWoB",
+          "name": "Telegram X"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "15050da4-ed7b-4014-817d-54c9d4aa3dab",
+              "leftValue": "={{ $json.callback_query.data }}",
+              "rightValue": "approve_",
+              "operator": {
+                "type": "string",
+                "operation": "startsWith"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        544,
+        832
+      ],
+      "id": "d73828e6-b409-439a-bc63-9d3486d9ebe3",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.Tweet_1_Text }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        1072
+      ],
+      "id": "43a9e460-cba8-436e-9793-e57907db5ecd",
+      "name": "Create Tweet",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "lMcCYagVYhUrqbkE",
+          "name": "X account s3conomics"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA",
+          "mode": "list",
+          "cachedResultName": "X Content Factory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1115215534,
+          "mode": "list",
+          "cachedResultName": "Tweet_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit#gid=1115215534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution_ID": "={{$json.Execution_ID}}",
+            "Created_At": "={{$now}}",
+            "Status": "Pending",
+            "Source_Article_Title": "={{$('Parse Editorial Decision1').item.json.selected_headline}}",
+            "Source_Article_URL": "={{ $('Parse Editorial Decision1').item.json.selected_url }}",
+            "Editorial_Angle": "={{$('Parse Editorial Decision1').item.json.editorial_angle}}",
+            "Tweet_1_URL": "=",
+            "Tweet_1_Text": "={{ $('Parse X Thread').item.json.posts[0] }}",
+            "Tweet_2_Text": "={{ $('Parse X Thread').item.json.posts[1] }}",
+            "Tweet_3_Text": "={{ $('Parse X Thread').item.json.posts[2] }}",
+            "Tweet_4_Text": "={{ $('Parse X Thread').item.json.posts[3] }}",
+            "Tweet_5_Text": "={{ $('Parse X Thread').item.json.posts[4] }}"
+          },
+          "matchingColumns": [
+            "Execution_ID"
+          ],
+          "schema": [
+            {
+              "id": "Execution_ID",
+              "displayName": "Execution_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created_At",
+              "displayName": "Created_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Published_At",
+              "displayName": "Published_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Source_Article_URL",
+              "displayName": "Source_Article_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Source_Article_Title",
+              "displayName": "Source_Article_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Editorial_Angle",
+              "displayName": "Editorial_Angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_1_Text",
+              "displayName": "Tweet_1_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_1_ID",
+              "displayName": "Tweet_1_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_1_URL",
+              "displayName": "Tweet_1_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_2_Text",
+              "displayName": "Tweet_2_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_2_ID",
+              "displayName": "Tweet_2_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_2_URL",
+              "displayName": "Tweet_2_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_3_Text",
+              "displayName": "Tweet_3_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_3_ID",
+              "displayName": "Tweet_3_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_3_URL",
+              "displayName": "Tweet_3_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_4_Text",
+              "displayName": "Tweet_4_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_4_ID",
+              "displayName": "Tweet_4_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_4_URL",
+              "displayName": "Tweet_4_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_5_Text",
+              "displayName": "Tweet_5_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_5_ID",
+              "displayName": "Tweet_5_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_5_URL",
+              "displayName": "Tweet_5_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1360,
+        304
+      ],
+      "id": "1a9f2b96-2d7f-447b-8f9a-a1ccae12ba6c",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "x76uNqoyzWeV5eZe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA",
+          "mode": "list",
+          "cachedResultName": "X Content Factory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1115215534,
+          "mode": "list",
+          "cachedResultName": "Tweet_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit#gid=1115215534"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Execution_ID",
+              "lookupValue": "={{ Number($json.callback_query.data.split(\"_\")[1]) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1072,
+        816
+      ],
+      "id": "e0c892df-91b9-4f20-b7c5-760730e114a9",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "x76uNqoyzWeV5eZe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const posts = [\n  $json.Tweet_1_Text,\n  $json.Tweet_2_Text,\n  $json.Tweet_3_Text,\n  $json.Tweet_4_Text,\n  $json.Tweet_5_Text,\n].filter(post => post && post.trim() !== \"\");\n\nreturn [{\n  json: {\n    ...$json,\n    posts\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1920,
+        816
+      ],
+      "id": "1bb8fa87-6127-44b6-8c20-bc0a40d666ff",
+      "name": "Parse Posts JSON"
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Parse Posts JSON').item.json.Tweet_2_Text }}",
+        "additionalFields": {
+          "inReplyToStatusId": {
+            "__rl": true,
+            "value": "={{ $json.Tweet_1_ID }}",
+            "mode": "id"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        704,
+        1072
+      ],
+      "id": "6a89b63d-bd70-496d-a210-4ccb5714603e",
+      "name": "Create Reply Tweet 2",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "lMcCYagVYhUrqbkE",
+          "name": "X account s3conomics"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA",
+          "mode": "list",
+          "cachedResultName": "X Content Factory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1115215534,
+          "mode": "list",
+          "cachedResultName": "Tweet_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit#gid=1115215534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution_ID": "=={{ $('Parse Posts JSON').item.json.Execution_ID }}",
+            "Tweet_1_ID": "={{ $('Create Tweet').item.json.id }}",
+            "Tweet_1_URL": "={{ 'https://x.com/i/web/status/' + $('Create Tweet').item.json.id }}",
+            "Published_At": "={{ $now }}",
+            "row_number": "={{ $('Parse Posts JSON').item.json.row_number }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Execution_ID",
+              "displayName": "Execution_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created_At",
+              "displayName": "Created_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Published_At",
+              "displayName": "Published_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_URL",
+              "displayName": "Source_Article_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_Title",
+              "displayName": "Source_Article_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Editorial_Angle",
+              "displayName": "Editorial_Angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_Text",
+              "displayName": "Tweet_1_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_ID",
+              "displayName": "Tweet_1_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tweet_1_URL",
+              "displayName": "Tweet_1_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tweet_2_Text",
+              "displayName": "Tweet_2_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_ID",
+              "displayName": "Tweet_2_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_URL",
+              "displayName": "Tweet_2_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_Text",
+              "displayName": "Tweet_3_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_ID",
+              "displayName": "Tweet_3_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_URL",
+              "displayName": "Tweet_3_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_Text",
+              "displayName": "Tweet_4_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_ID",
+              "displayName": "Tweet_4_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_URL",
+              "displayName": "Tweet_4_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_Text",
+              "displayName": "Tweet_5_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_ID",
+              "displayName": "Tweet_5_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_URL",
+              "displayName": "Tweet_5_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        368,
+        1072
+      ],
+      "id": "014e8b7e-4150-499c-82f3-dd5eab22afe3",
+      "name": "Update Tweet 1 ID",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "x76uNqoyzWeV5eZe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA",
+          "mode": "list",
+          "cachedResultName": "X Content Factory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1115215534,
+          "mode": "list",
+          "cachedResultName": "Tweet_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit#gid=1115215534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution_ID": "=={{ $('Parse Posts JSON').item.json.Execution_ID }}",
+            "Published_At": "={{ $now }}",
+            "row_number": "={{ $('Parse Posts JSON').item.json.row_number }}",
+            "Tweet_2_ID": "={{ $('Create Reply Tweet 2').item.json.id }}",
+            "Tweet_2_URL": "={{ 'https://x.com/i/web/status/' + $('Create Reply Tweet 2').item.json.id }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Execution_ID",
+              "displayName": "Execution_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created_At",
+              "displayName": "Created_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Published_At",
+              "displayName": "Published_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_URL",
+              "displayName": "Source_Article_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_Title",
+              "displayName": "Source_Article_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Editorial_Angle",
+              "displayName": "Editorial_Angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_Text",
+              "displayName": "Tweet_1_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_ID",
+              "displayName": "Tweet_1_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_URL",
+              "displayName": "Tweet_1_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_Text",
+              "displayName": "Tweet_2_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_ID",
+              "displayName": "Tweet_2_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_2_URL",
+              "displayName": "Tweet_2_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_3_Text",
+              "displayName": "Tweet_3_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_ID",
+              "displayName": "Tweet_3_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_URL",
+              "displayName": "Tweet_3_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_Text",
+              "displayName": "Tweet_4_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_ID",
+              "displayName": "Tweet_4_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_URL",
+              "displayName": "Tweet_4_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_Text",
+              "displayName": "Tweet_5_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_ID",
+              "displayName": "Tweet_5_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_URL",
+              "displayName": "Tweet_5_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1120,
+        1072
+      ],
+      "id": "f36a34d2-a879-4ced-9518-492da74a9912",
+      "name": "Update Tweet 2 ID",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "x76uNqoyzWeV5eZe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Parse Posts JSON').item.json.Tweet_3_Text }}",
+        "additionalFields": {
+          "inReplyToStatusId": {
+            "__rl": true,
+            "value": "={{ $('Create Reply Tweet 2').item.json.id }}",
+            "mode": "id"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        1072
+      ],
+      "id": "f14af420-e817-4000-a253-7af8c7062549",
+      "name": "Create Reply Tweet 3",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "lMcCYagVYhUrqbkE",
+          "name": "X account s3conomics"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA",
+          "mode": "list",
+          "cachedResultName": "X Content Factory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1115215534,
+          "mode": "list",
+          "cachedResultName": "Tweet_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit#gid=1115215534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution_ID": "=={{ $('Parse Posts JSON').item.json.Execution_ID }}",
+            "Published_At": "={{ $now }}",
+            "row_number": "={{ $('Parse Posts JSON').item.json.row_number }}",
+            "Tweet_3_ID": "={{ $('Create Reply Tweet 3').item.json.id }}",
+            "Tweet_3_URL": "={{ 'https://x.com/i/web/status/' + $('Create Reply Tweet 3').item.json.id }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Execution_ID",
+              "displayName": "Execution_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created_At",
+              "displayName": "Created_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Published_At",
+              "displayName": "Published_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_URL",
+              "displayName": "Source_Article_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_Title",
+              "displayName": "Source_Article_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Editorial_Angle",
+              "displayName": "Editorial_Angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_Text",
+              "displayName": "Tweet_1_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_ID",
+              "displayName": "Tweet_1_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_URL",
+              "displayName": "Tweet_1_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_Text",
+              "displayName": "Tweet_2_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_ID",
+              "displayName": "Tweet_2_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_URL",
+              "displayName": "Tweet_2_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_Text",
+              "displayName": "Tweet_3_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_ID",
+              "displayName": "Tweet_3_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_3_URL",
+              "displayName": "Tweet_3_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_4_Text",
+              "displayName": "Tweet_4_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_ID",
+              "displayName": "Tweet_4_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_URL",
+              "displayName": "Tweet_4_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_Text",
+              "displayName": "Tweet_5_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_ID",
+              "displayName": "Tweet_5_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_URL",
+              "displayName": "Tweet_5_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2032,
+        1072
+      ],
+      "id": "69a37d35-0aba-4787-9bdc-a4ee377641f6",
+      "name": "Update Tweet 3 ID",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "x76uNqoyzWeV5eZe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Parse Posts JSON').item.json.Tweet_4_Text }}",
+        "additionalFields": {
+          "inReplyToStatusId": {
+            "__rl": true,
+            "value": "={{ $json.Tweet_3_ID }}",
+            "mode": "id"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        -32,
+        1328
+      ],
+      "id": "6777789f-1607-4155-8ef4-8d71669c6336",
+      "name": "Create Reply Tweet 4",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "lMcCYagVYhUrqbkE",
+          "name": "X account s3conomics"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA",
+          "mode": "list",
+          "cachedResultName": "X Content Factory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1115215534,
+          "mode": "list",
+          "cachedResultName": "Tweet_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit#gid=1115215534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution_ID": "=={{ $('Parse Posts JSON').item.json.Execution_ID }}",
+            "Published_At": "={{ $now }}",
+            "row_number": "={{ $('Parse Posts JSON').item.json.row_number }}",
+            "Tweet_4_ID": "={{ $('Create Reply Tweet 4').item.json.id }}",
+            "Tweet_4_URL": "={{ 'https://x.com/i/web/status/' + $('Create Reply Tweet 4').item.json.id }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Execution_ID",
+              "displayName": "Execution_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created_At",
+              "displayName": "Created_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Published_At",
+              "displayName": "Published_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_URL",
+              "displayName": "Source_Article_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_Title",
+              "displayName": "Source_Article_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Editorial_Angle",
+              "displayName": "Editorial_Angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_Text",
+              "displayName": "Tweet_1_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_ID",
+              "displayName": "Tweet_1_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_URL",
+              "displayName": "Tweet_1_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_Text",
+              "displayName": "Tweet_2_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_ID",
+              "displayName": "Tweet_2_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_URL",
+              "displayName": "Tweet_2_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_Text",
+              "displayName": "Tweet_3_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_ID",
+              "displayName": "Tweet_3_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_URL",
+              "displayName": "Tweet_3_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_Text",
+              "displayName": "Tweet_4_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_ID",
+              "displayName": "Tweet_4_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_4_URL",
+              "displayName": "Tweet_4_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_5_Text",
+              "displayName": "Tweet_5_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_ID",
+              "displayName": "Tweet_5_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_URL",
+              "displayName": "Tweet_5_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        384,
+        1328
+      ],
+      "id": "a49fec7a-3f23-4ad2-a729-4852769d1a72",
+      "name": "Update Tweet 4 ID",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "x76uNqoyzWeV5eZe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "text": "={{ $('Parse Posts JSON').item.json.Tweet_5_Text }}",
+        "additionalFields": {
+          "inReplyToStatusId": {
+            "__rl": true,
+            "value": "={{ $json.Tweet_4_ID }}",
+            "mode": "id"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.twitter",
+      "typeVersion": 2,
+      "position": [
+        1104,
+        1328
+      ],
+      "id": "a6913978-9aa6-4e2b-a7b4-91f403b6b52c",
+      "name": "Create Reply Tweet 5",
+      "credentials": {
+        "twitterOAuth2Api": {
+          "id": "lMcCYagVYhUrqbkE",
+          "name": "X account s3conomics"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA",
+          "mode": "list",
+          "cachedResultName": "X Content Factory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1115215534,
+          "mode": "list",
+          "cachedResultName": "Tweet_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit#gid=1115215534"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Execution_ID": "=={{ $('Parse Posts JSON').item.json.Execution_ID }}",
+            "Published_At": "={{ $now }}",
+            "row_number": "={{ $('Parse Posts JSON').item.json.row_number }}",
+            "Tweet_5_ID": "={{ $('Create Reply Tweet 5').item.json.id }}",
+            "Tweet_5_URL": "={{ 'https://x.com/i/web/status/' + $('Create Reply Tweet 5').item.json.id }}"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Execution_ID",
+              "displayName": "Execution_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Created_At",
+              "displayName": "Created_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Published_At",
+              "displayName": "Published_At",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_URL",
+              "displayName": "Source_Article_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Source_Article_Title",
+              "displayName": "Source_Article_Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Editorial_Angle",
+              "displayName": "Editorial_Angle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_Text",
+              "displayName": "Tweet_1_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_ID",
+              "displayName": "Tweet_1_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_1_URL",
+              "displayName": "Tweet_1_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_Text",
+              "displayName": "Tweet_2_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_ID",
+              "displayName": "Tweet_2_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_2_URL",
+              "displayName": "Tweet_2_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_Text",
+              "displayName": "Tweet_3_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_ID",
+              "displayName": "Tweet_3_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_3_URL",
+              "displayName": "Tweet_3_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_Text",
+              "displayName": "Tweet_4_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_ID",
+              "displayName": "Tweet_4_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_4_URL",
+              "displayName": "Tweet_4_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_Text",
+              "displayName": "Tweet_5_Text",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tweet_5_ID",
+              "displayName": "Tweet_5_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Tweet_5_URL",
+              "displayName": "Tweet_5_URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1584,
+        1328
+      ],
+      "id": "20505dc8-77b2-4aa9-a75a-76cd2c59888f",
+      "name": "Update Tweet 5 ID",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "x76uNqoyzWeV5eZe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const tweet = $('Parse Posts JSON').item.json.Tweet_3_Text;\n\nreturn [{\n  json: {\n    length: tweet.length,\n    tweet\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1328,
+        1072
+      ],
+      "id": "be812652-a9c6-4b79-a994-0c098458ff3d",
+      "name": "Code in JavaScript3"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "21e9ac42-0304-4e33-8643-a9ce2120c961",
+              "leftValue": "={{ $json.posts[0].length }}",
+              "rightValue": 230,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "e4c03aef-6bc3-4385-bbd6-6729cda22c92",
+              "leftValue": "={{ $json.posts[1].length }}",
+              "rightValue": 230,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "85df74bd-b00f-4cfc-9da5-e4555abc16e5",
+              "leftValue": "={{ $json.posts[2].length }}",
+              "rightValue": 230,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "06e7e416-d73a-4822-aec1-a4226cf8fd43",
+              "leftValue": "={{ $json.posts[3].length }}",
+              "rightValue": 230,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "c5b3ebbb-bce5-4115-991a-37f715f2612e",
+              "leftValue": "={{ $json.posts[4].length }}",
+              "rightValue": 230,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -128,
+        288
+      ],
+      "id": "c1c28ab2-3ac8-4a0f-a44a-039758eae950",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are the senior editor for S3conomics.ai.\n\nYour task is to edit X threads for length without changing their quality.\n\nOnly rewrite tweets that exceed the target length.\n\nDo not change tweets that are already within the limit.\n\nPreserve:\n- the central thesis\n- the narrative flow\n- the tone\n- factual accuracy\n- sequencing\n\nYour edits should remove unnecessary words and secondary details while preserving the original meaning.\n\nReturn only valid JSON."
+            },
+            {
+              "content": "=The following X thread has already been approved editorially.\n\nYour only task is to shorten any tweet longer than 220 characters.\n\nRules:\n\n• Rewrite ONLY tweets longer than 220 characters.\n• Leave shorter tweets exactly as they are.\n• Target 180–220 characters.\n• Preserve meaning, tone and factual accuracy.\n• Remove secondary details before removing important facts.\n• Do not add any new information.\n• Return the complete thread as valid JSON using the exact same schema.\n\nThread:\n\n{{ JSON.stringify($json) }}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        160,
+        192
+      ],
+      "id": "3c22ad07-f584-4d22-8918-aa317126bf84",
+      "name": "Shorten Long Tweets",
+      "credentials": {
+        "openAiApi": {
+          "id": "bnpAwlIjIEw0WSI6",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.output[0].content[0].text;\n\nreturn [\n  {\n    json: JSON.parse(text)\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        704,
+        192
+      ],
+      "id": "408d7e6d-cbc9-420a-9ed0-b1efd83accd3",
+      "name": "Parse Posts JSON1"
+    },
+    {
+      "parameters": {
+        "chatId": "7886656314",
+        "text": "=🎉 X Thread Published Successfully!\n\n📰 Title:\n{{ $('Get row(s) in sheet').item.json.Title }}\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n1️⃣ {{ $('Get row(s) in sheet').item.json.Tweet_1_Text }}\n\n2️⃣ {{ $('Get row(s) in sheet').item.json.Tweet_2_Text }}\n\n3️⃣ {{ $('Get row(s) in sheet').item.json.Tweet_3_Text }}\n\n4️⃣ {{ $('Get row(s) in sheet').item.json.Tweet_4_Text }}\n\n5️⃣ {{ $('Get row(s) in sheet').item.json.Tweet_5_Text }}\n\n━━━━━━━━━━━━━━━━━━━━━━\n\n✅ Thread published successfully!\n\n🔗 Tweet 1\n{{ $('Update Tweet 1 ID').item.json.Tweet_1_URL }}\n\n🔗 Tweet 2\n{{ $('Update Tweet 2 ID').item.json.Tweet_2_URL }}\n\n🔗 Tweet 3\n{{ $('Update Tweet 3 ID').item.json.Tweet_3_URL }}\n\n🔗 Tweet 4\n{{ $('Update Tweet 4 ID').item.json.Tweet_4_URL }}\n\n🔗 Tweet 5\n{{ $('Update Tweet 5 ID').item.json.Tweet_5_URL }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Approve",
+                    "additionalFields": {
+                      "callback_data": "={{\"approve_\" + $execution.id}}"
+                    }
+                  },
+                  {
+                    "text": "❌ Reject",
+                    "additionalFields": {
+                      "callback_data": "={{\"reject_\" + $execution.id}}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2032,
+        1328
+      ],
+      "id": "e21ce583-e757-4748-8c1f-29bbd0895a40",
+      "name": "Tweet Published Message",
+      "webhookId": "efc2fe54-5017-402b-9856-08af828dae9a",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q9fsArrXezICsWoB",
+          "name": "Telegram X"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA",
+          "mode": "list",
+          "cachedResultName": "X Content Factory Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1115215534,
+          "mode": "list",
+          "cachedResultName": "Tweet_Database",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1oHzQec05GBhSeNuU5VvJs1z5FDyZKcSWLcHBoGxyadA/edit#gid=1115215534"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -96,
+        -336
+      ],
+      "id": "f342368a-0147-4f79-b226-5c508e9bd1d3",
+      "name": "Get Published Threads",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "x76uNqoyzWeV5eZe",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are the Editorial Quality Editor for S3conomics.ai.\n\nYour responsibility is to ensure every published thread teaches a genuinely new idea.\n\nYou will receive:\n\n1. Today's selected story.\n2. Previously published threads.\n\nYour task is NOT to compare headlines.\n\nInstead, compare:\n\n- The central mental model\n- The economic principle\n- The strategic insight\n- The editorial angle\n\nIgnore differences in company names, funding rounds, or news events if the educational lesson is essentially the same.\n\nIf today's story teaches substantially the same lesson as a previous thread, classify it as a duplicate.\n\nIf today's story introduces a meaningfully different insight, classify it as original.\n\nReturn only valid JSON."
+            },
+            {
+              "content": "=Today's Selected Story\n\nHeadline:\n{{ $('Parse Editorial Decision1').item.json.selected_headline }}\n\nEditorial Angle:\n{{ $('Parse Editorial Decision1').item.json.editorial_angle }}\n\nPreviously Published Threads\n\n{{ JSON.stringify(\n$('Get Published Threads')\n.all()\n.filter(item => item.json.Status === 'Published')\n.map(item => ({\nrow: item.json.row_number,\ntitle: item.json.Title,\narticle: item.json.Source_Article_Title,\neditorial_angle: item.json.Editorial_Angle\n}))\n) }}\n\nYour task is to determine whether today's story would result in a thread that is materially different from anything already published.\n\nDo NOT compare headlines alone.\n\nInstead compare:\n\n• The central mental model being taught\n• The economic principle\n• The strategic insight\n• The editorial angle\n• The educational takeaway\n\nIgnore superficial differences such as:\n- company names\n- funding rounds\n- product launches\n- acquisitions\n- dates\n\nIf the educational lesson is essentially the same as a previously published thread, classify today's story as a duplicate.\n\nIf today's story teaches a genuinely new mental model or insight, classify it as original.\n\nBe conservative.\nIt is better to allow a genuinely new educational thread than to incorrectly reject one.\n\nReturn ONLY valid JSON in the following format:\n\n{\n  \"selected_headline\": \"{{ $('Parse Editorial Decision1').item.json.selected_headline }}\",\n  \"selected_url\": \"{{ $('Parse Editorial Decision1').item.json.selected_url }}\",\n  \"editorial_angle\": \"{{ $('Parse Editorial Decision1').item.json.editorial_angle }}\",\n  \"selection_reason\": \"{{ $('Parse Editorial Decision1').item.json.selection_reason }}\",\n\n  \"is_duplicate\": false,\n  \"confidence\": 94,\n  \"similar_row\": \"\",\n  \"reason\": \"\"\n}"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        528,
+        -336
+      ],
+      "id": "4e2fe464-0e2e-428e-b290-8143678e5e12",
+      "name": "Editorial Originality Checker",
+      "credentials": {
+        "openAiApi": {
+          "id": "bnpAwlIjIEw0WSI6",
+          "name": "OpenAI account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3deef8a4-5157-400f-9d31-ff3779bab706",
+              "leftValue": "={{ $json.is_duplicate }}",
+              "rightValue": "false",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1424,
+        -336
+      ],
+      "id": "b89ed131-17a8-48c4-9612-cf80a68b5976",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "chatId": "7886656314",
+        "text": "=⚠️ Editorial Originality Check Failed\n\nToday's story has already been covered.\n\n📰 Headline:\n{{ $('Editorial LLM').item.json.selected_headline }}\n\n🎯 Editorial Angle:\n{{ $('Editorial LLM').item.json.editorial_angle }}\n\n📚 Similar Published Row:\n{{ $json.similar_row }}\n\n📊 Confidence:\n{{ $json.confidence }}%\n\n💡 Reason:\n{{ $json.reason }}\n\n⛔ No thread was generated today.",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Approve",
+                    "additionalFields": {
+                      "callback_data": "={{\"approve_\" + $execution.id}}"
+                    }
+                  },
+                  {
+                    "text": "❌ Reject",
+                    "additionalFields": {
+                      "callback_data": "={{\"reject_\" + $execution.id}}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1744,
+        -320
+      ],
+      "id": "ba6f1799-d25d-4fc8-9946-1778c0a22fe4",
+      "name": "Topic Already Covered",
+      "webhookId": "efc2fe54-5017-402b-9856-08af828dae9a",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q9fsArrXezICsWoB",
+          "name": "Telegram X"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.output[0].content[0].text;\n\nreturn [\n  {\n    json: JSON.parse(text)\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        -336
+      ],
+      "id": "15bce236-7d6b-4e7e-8cd5-5a2df634ca68",
+      "name": "Code in JavaScript2"
+    },
+    {
+      "parameters": {
+        "chatId": "7886656314",
+        "text": "=={{\n\"🧠 S3conomics Daily Thread\\n\\n\" +\n\"━━━━━━━━━━━━━━━━━━\\n\\n\" +\n\"📌 Title:\\n\" + $json.Source_Article_Title + \"\\n\\n\" +\n\"━━━━━━━━━━━━━━━━━━\\n\\n\" +\n\"Tweet 1:\\n\" + $json.Tweet_1_Text + \"\\n\\n\" +\n\"━━━━━━━━━━━━━━━━━━\\n\\n\" +\n\"Tweet 2:\\n\" + $json.Tweet_2_Text + \"\\n\\n\" +\n\"━━━━━━━━━━━━━━━━━━\\n\\n\" +\n\"Tweet 3:\\n\" + $json.Tweet_3_Text + \"\\n\\n\" +\n\"━━━━━━━━━━━━━━━━━━\\n\\n\" +\n\"Tweet 4:\\n\" + $json.Tweet_4_Text + \"\\n\\n\" +\n\"━━━━━━━━━━━━━━━━━━\\n\\n\" +\n\"Tweet 5:\\n\" + $json.Tweet_5_Text + \"\\n\\n\" +\n\"━━━━━━━━━━━━━━━━━━\\n\\n\" +\n\"Approve or Reject the thread!\"\n}}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Approve",
+                    "additionalFields": {
+                      "callback_data": "=approve_{{$json.Execution_ID}}"
+                    }
+                  },
+                  {
+                    "text": "❌ Reject",
+                    "additionalFields": {
+                      "callback_data": "=reject_{{$json.Execution_ID}}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1696,
+        304
+      ],
+      "id": "ee4ddbeb-7ae1-41af-a705-319e683eff94",
+      "name": "Send Telegram Approval",
+      "webhookId": "efc2fe54-5017-402b-9856-08af828dae9a",
+      "credentials": {
+        "telegramApi": {
+          "id": "Q9fsArrXezICsWoB",
+          "name": "Telegram X"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $json.output[0].content[0].text;\n\nreturn [\n  {\n    json: JSON.parse(text)\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        -720
+      ],
+      "id": "594ee1c1-4845-4e49-a8ec-80b85e4a1b7c",
+      "name": "Parse Editorial Decision1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "41f0c773-823b-4b37-9ed0-61f572a3af01",
+              "name": "Execution_ID",
+              "value": "={{$execution.id}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1088,
+        304
+      ],
+      "id": "d1acc0fc-b404-4db0-8b39-4984a5fae408",
+      "name": "Create Execution Metadata"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "TechCrunch RSS",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Venture Beat RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TechCrunch RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Venture Beat RSS": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Editorial LLM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editorial LLM": {
+      "main": [
+        [
+          {
+            "node": "Parse Editorial Decision1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Research Brief Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Research Brief Generator": {
+      "main": [
+        [
+          {
+            "node": "Parse Research Brief",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Research Brief": {
+      "main": [
+        [
+          {
+            "node": "X Thread Generator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "X Thread Generator": {
+      "main": [
+        [
+          {
+            "node": "Parse X Thread",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse X Thread": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Parse Posts JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Posts JSON": {
+      "main": [
+        [
+          {
+            "node": "Create Tweet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Tweet": {
+      "main": [
+        [
+          {
+            "node": "Update Tweet 1 ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Reply Tweet 2": {
+      "main": [
+        [
+          {
+            "node": "Update Tweet 2 ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Tweet 1 ID": {
+      "main": [
+        [
+          {
+            "node": "Create Reply Tweet 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Tweet 2 ID": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Reply Tweet 3": {
+      "main": [
+        [
+          {
+            "node": "Update Tweet 3 ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Tweet 3 ID": {
+      "main": [
+        [
+          {
+            "node": "Create Reply Tweet 4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Reply Tweet 4": {
+      "main": [
+        [
+          {
+            "node": "Update Tweet 4 ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Tweet 4 ID": {
+      "main": [
+        [
+          {
+            "node": "Create Reply Tweet 5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Reply Tweet 5": {
+      "main": [
+        [
+          {
+            "node": "Update Tweet 5 ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript3": {
+      "main": [
+        [
+          {
+            "node": "Create Reply Tweet 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Shorten Long Tweets",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Execution Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shorten Long Tweets": {
+      "main": [
+        [
+          {
+            "node": "Parse Posts JSON1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Posts JSON1": {
+      "main": [
+        [
+          {
+            "node": "Create Execution Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Tweet 5 ID": {
+      "main": [
+        [
+          {
+            "node": "Tweet Published Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Published Threads": {
+      "main": [
+        [
+          {
+            "node": "Editorial Originality Checker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Editorial Originality Checker": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Topic Already Covered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript2": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram Approval": {
+      "main": [
+        []
+      ]
+    },
+    "Parse Editorial Decision1": {
+      "main": [
+        [
+          {
+            "node": "Get Published Threads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Execution Metadata": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "4c6bdc7a-7d03-46c4-8e37-d497bb2b690d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "90fdc0e33c4195798af88d7dc2d4160cf647123816640f9f5c3a2a9f48686789"
+  },
+  "nodeGroups": [],
+  "id": "qZHrzDAIoMO5FYyu",
+  "tags": []
+}
