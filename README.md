@@ -9,6 +9,31 @@ An AI-powered editorial automation system that discovers AI news, researches top
 ![Status](https://img.shields.io/badge/Status-v1.0.0-success)
 
 ---
+## 📸 Project Gallery
+
+### Thread Generation Workflow
+
+This workflow ingests AI news, researches selected topics, generates educational X threads, and routes them for human approval.
+
+![Thread Generation Workflow](assets/thread-generation-workflow.png)
+
+---
+
+### Publisher Workflow
+
+This workflow listens for Telegram approval, publishes the approved thread to X, and updates the workflow state.
+
+![Publisher Workflow](assets/publisher-workflow.png)
+
+---
+
+### Example Published Thread
+
+Example of a thread generated and published by the system.
+
+![Published Thread](assets/x-thread-example.png)
+
+---
 
 ## 📖 Overview
 
